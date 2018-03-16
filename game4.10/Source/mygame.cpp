@@ -275,6 +275,7 @@ void CGameStateRun::OnMove()							// 移動遊戲元素
 	}
 	practice.SetTopLeft(picX, picY);
 	c_practice.OnMove();
+	gamemap.OnMove();
 	//
 	// 移動彈跳的球
 	//
@@ -334,6 +335,7 @@ void CGameStateRun::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		eraser.SetMovingUp(true);
 	if (nChar == KEY_DOWN)
 		eraser.SetMovingDown(true);
+	gamemap.OnKeyDown(nChar);
 }
 
 void CGameStateRun::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -401,8 +403,8 @@ void CGameStateRun::OnShow()
 	corner.ShowBitmap();
 	corner.SetTopLeft(SIZE_X-corner.Width(), SIZE_Y-corner.Height());
 	corner.ShowBitmap();
-	practice.ShowBitmap();
-	c_practice.OnSohw();
+	//practice.ShowBitmap();
+	//c_practice.OnSohw();
 	gamemap.OnSohw();
 }
 CPractice::CPractice() {
@@ -432,6 +434,8 @@ CGameMap::CGameMap():X(20),Y(40),MW(120),MH(100)
 			map[i][j] = map_init[i][j];
 		}
 	}
+	random_num = 0;
+	bballs = NULL;
 }
 
 void CGameMap::LoadBitmap() {
@@ -458,6 +462,56 @@ void CGameMap::OnSohw() {
 			}
 		}
 	}
+	for (int i = 0; i < random_num; i++) {
+		bballs[i].OnShow();
+	}
+}
+void CGameMap::InitializeBouncingBall(int ini_index, int row, int col) {
+	const int VELOCITY = 10;
+	const int BALL_PIC_HEIGHT = 15;
+	int floor = Y + (row + 1)*MH - BALL_PIC_HEIGHT;
+
+	bballs[ini_index].LoadBitmap();
+	bballs[ini_index].SetFloor(floor);
+	bballs[ini_index].SetVelocity(VELOCITY + col);
+	bballs[ini_index].SetXY(X + col*MW + MW / 2, floor);
+}
+void CGameMap::RandomBouncingBall() {
+	const int MAX_RAND_NUM = 10;
+	random_num = (rand() % MAX_RAND_NUM) + 1;
+	bballs = new CBouncingBall[random_num];
+	int ini_index = 0;
+	for (int row = 0; row < 4; row++) {
+		for (int col=0; col < 5; col++) {
+			if (map[row][col] != 0 && ini_index < random_num) {
+				InitializeBouncingBall(ini_index, row, col);
+				ini_index++;
+			}
+		}
+	}
+}
+void CGameMap::OnKeyDown(UINT nChar) {
+	const int KEY_SPACE = 0X20;
+	if (nChar == KEY_SPACE) {
+		RandomBouncingBall();
+	}
+}
+void CGameMap::OnMove() {
+	for (int i = 0; i < random_num; i++) {
+		bballs[i].OnMove();
+	}
+}
+CGameMap::~CGameMap(){}
+void CBouncingBall::SetXY(int x,int y) {
+	this-> x = x;
+	this->y = y;
+}
+void CBouncingBall::SetFloor(int floor) {
+	this->floor = floor;
+}
+void CBouncingBall::SetVelocity(int velocity) {
+	this->velocity = velocity;
+	this->initial_velocity = velocity;
 }
 }
 

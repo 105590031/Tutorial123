@@ -92,8 +92,8 @@ namespace game_framework {
 		void OnSohw();
 		void OnMove();
 		void OnKeyDown(UINT);
-		void RandomBouncingBall(int, int, int);
-		void InitializeBouncingBall(int , int, int)
+		void RandomBouncingBall();
+		void InitializeBouncingBall(int, int, int);
 		~CGameMap();
 	protected:
 		CMovingBitmap red,green;
